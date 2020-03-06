@@ -136,7 +136,6 @@ export default class SmartBanner {
         <div>
           <div class="smartbanner__info__title">${this.options.title}</div>
           <div class="smartbanner__info__author">${this.options.author}</div>
-          <div class="smartbanner__info__price">${this.options.price}${this.priceSuffix}</div>
         </div>
       </div>
       <a href="${this.buttonUrl}" target="_blank" class="smartbanner__button js_smartbanner__button" rel="noopener" aria-label="${this.options.button}"><span class="smartbanner__button__label">${this.options.button}</span></a>
@@ -151,6 +150,10 @@ export default class SmartBanner {
     }
   }
 
+  get disabled(){
+    return this.options.disabled === 'true';
+  }
+
   get platformEnabled() {
     let enabledPlatforms = this.options.enabledPlatforms || DEFAULT_PLATFORMS;
     return enabledPlatforms && enabledPlatforms.replace(/\s+/g, '').split(',').indexOf(this.platform) !== -1;
@@ -158,6 +161,10 @@ export default class SmartBanner {
 
   get positioningDisabled() {
     return this.options.disablePositioning === 'true';
+  }
+
+  get root() {
+    return this.options.root || 'body';
   }
 
   get apiEnabled() {
@@ -195,6 +202,10 @@ export default class SmartBanner {
       return false;
     }
 
+    if (this.disabled) {
+      return false;
+    }
+
     // User Agent was explicetely excluded by defined excludeUserAgentRegex
     if (this.userAgentExcluded) {
       return false;
@@ -207,7 +218,7 @@ export default class SmartBanner {
     }
 
     let bannerDiv = document.createElement('div');
-    document.querySelector('body').appendChild(bannerDiv);
+    document.querySelector(this.root).appendChild(bannerDiv);
     bannerDiv.outerHTML = this.html;
     let event = new Event('smartbanner.view');
     document.dispatchEvent(event);
@@ -223,7 +234,7 @@ export default class SmartBanner {
       restoreContentPosition();
     }
     let banner = document.querySelector('.js_smartbanner');
-    document.querySelector('body').removeChild(banner);
+    document.querySelector(this.root).removeChild(banner);
     let event = new Event('smartbanner.exit');
     document.dispatchEvent(event);
     Bakery.bake(this.hideTtl, this.hidePath);
